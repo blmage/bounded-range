@@ -1,0 +1,16 @@
+# Development and Build 
+/dist
+/cabal-dev
+/.cabal-sandbox
+/cabal.sandbox.config
+
+# Temporary Files
+*~
+.*.swp
+*.log
+
+# HTodo
+/.htodo.db
+
+# Idea
+/.idea
