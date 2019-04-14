@@ -17,6 +17,7 @@ module Data.Range (
       belowRange,
       belowRanges,
       rangesOverlap,
+      rangeListsOverlap,
       -- * Set operations
       mergeRanges,
       union,
@@ -28,6 +29,7 @@ module Data.Range (
       fromRanges
    ) where
 
+import Control.Applicative (liftA2)
 import Data.Functor ((<&>))
 
 import qualified Data.Range.Algebra as Alg
@@ -108,6 +110,10 @@ rangesOverlap (LowerBoundRange x) (UpperBoundRange y) = x <= y
 rangesOverlap (UpperBoundRange _) (UpperBoundRange _) = True
 rangesOverlap FullRange _ = True
 rangesOverlap a b = rangesOverlap b a
+
+-- |
+rangeListsOverlap :: (Ord a) => [Range a] -> [Range a] -> Bool
+rangeListsOverlap = (or .) . liftA2 rangesOverlap
 
 -- | Given a range and a value it will tell you wether or not the value is in the range.
 -- Remember that all ranges are inclusive.
