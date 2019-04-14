@@ -24,8 +24,11 @@ module Data.Range (
       difference,
       invert,
       -- * Utility methods
+      mapRanges,
       fromRanges
    ) where
+
+import Data.Functor ((<&>))
 
 import qualified Data.Range.Algebra as Alg
 import Data.Range.Data
@@ -276,4 +279,16 @@ fromRanges = takeEvenly . fmap fromRange . mergeRanges
          LowerBoundRange x -> [x..maxBound]
          UpperBoundRange x -> [minBound..x]
          FullRange         -> [minBound..maxBound]
+
+-- | Maps a function over the bounds of a range.
+--
+-- This should be used with order-preserving functions, otherwise the result may be
+-- unexpected.
+mapRanges :: (Ord b, Enum b, Bounded b) => (a -> b) -> [Range a] -> [Range b]
+mapRanges f rs = mergeRanges $ rs <&> \case
+    SingletonRange x  -> SingletonRange $ f x
+    SpanRange x y     -> SpanRange (f x) (f y)
+    LowerBoundRange x -> LowerBoundRange $ f x
+    UpperBoundRange x -> UpperBoundRange $ f x
+    FullRange         -> FullRange
 

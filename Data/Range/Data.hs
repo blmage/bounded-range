@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE Safe #-}
 
 -- | The Data module for common data types within the code.
@@ -12,7 +13,7 @@ data Range a
    | LowerBoundRange a     -- ^ Represents a range with only an inclusive lower bound.
    | UpperBoundRange a     -- ^ Represents a range with only an inclusive upper bound.
    | FullRange             -- ^ Represents a range over all possible values.
-   deriving(Eq, Show)
+   deriving(Eq, Functor, Show)
 
 -- | These are the operations that can join two disjunct lists of ranges together.
 data RangeOperation
