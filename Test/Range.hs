@@ -26,7 +26,7 @@ instance (Integral a, Num a, Eq a) => Arbitrary (UnequalPair a) where
       second <- arbitrarySizedIntegral `suchThat` (/= first)
       return $ UnequalPair (first, second)
 
-prop_singleton_in_range :: Integer -> Bool
+prop_singleton_in_range :: Int -> Bool
 prop_singleton_in_range a = inRange (SingletonRange a) a
 
 prop_singleton_not_in_range :: (Ord a) => UnequalPair a -> Bool
@@ -42,17 +42,17 @@ instance (Num a, Integral a, Ord a, Random a) => Arbitrary (SpanContains a) wher
       middle <- choose (begin, end)
       return $ SpanContains (begin, end) middle
 
-prop_span_contains :: SpanContains Integer -> Bool
+prop_span_contains :: SpanContains Int -> Bool
 prop_span_contains (SpanContains (begin, end) middle) = inRange (SpanRange begin end) middle
 
-prop_infinite_range_contains_everything :: Integer -> Bool
-prop_infinite_range_contains_everything = inRange InfiniteRange
+prop_full_range_contains_everything :: Int -> Bool
+prop_full_range_contains_everything = inRange FullRange
 
 tests_inRange = testGroup "inRange Function"
    [ testProperty "equal singletons in range" prop_singleton_in_range
    , testProperty "unequal singletons not in range" prop_singleton_not_in_range
    , testProperty "spans contain values in their middles" prop_span_contains
-   , testProperty "infinite ranges contain everything" prop_infinite_range_contains_everything
+   , testProperty "full ranges contain everything" prop_full_range_contains_everything
    ]
 
 instance (Num a, Integral a, Ord a, Enum a) => Arbitrary (Range a) where
@@ -61,7 +61,7 @@ instance (Num a, Integral a, Ord a, Enum a) => Arbitrary (Range a) where
       , generateSpan
       , generateLowerBound
       , generateUpperBound
-      , generateInfiniteRange
+      , generateFullRange
       ]
       where
          generateSingleton = liftM SingletonRange arbitrarySizedIntegral
@@ -71,8 +71,8 @@ instance (Num a, Integral a, Ord a, Enum a) => Arbitrary (Range a) where
             return $ SpanRange first second
          generateLowerBound = liftM LowerBoundRange arbitrarySizedIntegral
          generateUpperBound = liftM UpperBoundRange arbitrarySizedIntegral
-         generateInfiniteRange :: Gen (Range a)
-         generateInfiniteRange = return InfiniteRange
+         generateFullRange :: Gen (Range a)
+         generateFullRange = return FullRange
 
 -- an intersection of a value followed by a union of that value should be the identity.
 -- This is false. An intersection of a value followed by a union of that value should be
@@ -81,7 +81,7 @@ instance (Num a, Integral a, Ord a, Enum a) => Arbitrary (Range a) where
 -- (1, 3) intersection (3, 4) = (3, 3)
 -- ((1, 3) intersection (3, 4)) union (3, 4) => (3, 4)
 
-prop_in_range_out_of_range_after_invert :: (Integer, [Range Integer]) -> Bool
+prop_in_range_out_of_range_after_invert :: (Int, [Range Int]) -> Bool
 prop_in_range_out_of_range_after_invert (point, ranges) =
    (inRanges ranges point) /= (inRanges (invert ranges) point)
 
@@ -98,7 +98,7 @@ instance (Num a, Integral a, Ord a, Enum a) => Arbitrary (Alg.RangeExpr [Range a
     , (1, Alg.difference <$> arbitrary <*> arbitrary)
     ]
 
-prop_equivalence_eval_and_evalPredicate :: ([Integer], Alg.RangeExpr [Range Integer]) -> Bool
+prop_equivalence_eval_and_evalPredicate :: ([Int], Alg.RangeExpr [Range Int]) -> Bool
 prop_equivalence_eval_and_evalPredicate (points, expr) = actual == expected
   where
       actual = map (inRanges $ Alg.eval expr) points

@@ -54,7 +54,7 @@ newtype RangeExpr a = RangeExpr { getFree :: Free RangeExprF a }
 -- <https://www.schoolofhaskell.com/user/bartosz/understanding-algebras read more on School of Haskell>.
 type Algebra f a = f a -> a
 
-rangeMergeAlgebra :: (Ord a, Enum a) => Algebra RangeExprF (RangeMerge a)
+rangeMergeAlgebra :: (Ord a, Enum a, Bounded a) => Algebra RangeExprF (RangeMerge a)
 rangeMergeAlgebra (Invert a) = invertRM a
 rangeMergeAlgebra (Union a b) = a `unionRangeMerges` b
 rangeMergeAlgebra (Intersection a b) = a `intersectionRangeMerges` b

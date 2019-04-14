@@ -6,13 +6,13 @@
 -- default, this example depicts how the parser works:
 --
 -- @
--- ghci> parseRanges "-5,8-10,13-15,20-" :: Either ParseError [Range Integer]
+-- ghci> parseRanges "-5,8-10,13-15,20-" :: Either ParseError [Range Int]
 -- Right [UpperBoundRange 5,SpanRange 8 10,SpanRange 13 15,LowerBoundRange 20]
 -- (0.01 secs, 681,792 bytes)
 -- ghci>
 -- @
 --
--- And the * character translates to an infinite range. This is very useful for accepting
+-- And the * character translates to a full range. This is very useful for accepting
 -- ranges as input in CLI programs, but not as useful for parsing .cabal or package.json files.
 --
 -- To handle more complex parsing cases it is recommended that you use the ranges library
@@ -70,15 +70,15 @@ ranges args = range `sepBy` (string $ unionSeparator args)
    where
       range :: (Read a) => Parser (Range a)
       range = choice
-         [ infiniteRange
+         [ fullRange
          , spanRange
          , singletonRange
          ]
 
-      infiniteRange :: (Read a) => Parser (Range a)
-      infiniteRange = do
+      fullRange :: (Read a) => Parser (Range a)
+      fullRange = do
          string_ $ wildcardSymbol args
-         return InfiniteRange
+         return FullRange
 
       spanRange :: (Read a) => Parser (Range a)
       spanRange = try $ do

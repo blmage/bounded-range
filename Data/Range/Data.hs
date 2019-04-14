@@ -11,7 +11,7 @@ data Range a
    | SpanRange a a         -- ^ Represents a bounded and inclusive range of elements. The first argument is expected to be less than or equal to the second argument.
    | LowerBoundRange a     -- ^ Represents a range with only an inclusive lower bound.
    | UpperBoundRange a     -- ^ Represents a range with only an inclusive upper bound.
-   | InfiniteRange         -- ^ Represents an infinite range over all values.
+   | FullRange             -- ^ Represents a range over all possible values.
    deriving(Eq, Show)
 
 -- | These are the operations that can join two disjunct lists of ranges together.

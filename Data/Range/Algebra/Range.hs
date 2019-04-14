@@ -6,5 +6,5 @@ import Data.Range.Algebra.Internal
 
 import Control.Monad.Free
 
-rangeAlgebra :: (Ord a, Enum a) => Algebra RangeExprF [Range a]
+rangeAlgebra :: (Ord a, Enum a, Bounded a) => Algebra RangeExprF [Range a]
 rangeAlgebra = exportRangeMerge . iter rangeMergeAlgebra . Free . fmap (Pure . loadRanges)

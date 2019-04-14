@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 -- This is only okay in test classes
 
-module Test.RangeMerge 
+module Test.RangeMerge
    ( rangeMergeTestCases
    ) where
 
@@ -20,13 +20,13 @@ instance (Num a, Integral a, Ord a, Random a) => Arbitrary (RangeMerge a) where
       upperBound <- maybeNumber
       possibleSpanStart <- arbitrarySizedIntegral
       spans <- generateSpanList (fromMaybe possibleSpanStart upperBound)
-      lowerBound <- oneof 
+      lowerBound <- oneof
          [ fmap Just $ fmap ((+) $ maxMaybe (fmap snd $ lastMaybe spans) $ maxMaybe upperBound possibleSpanStart) $ choose (2, 100)
          , return Nothing
          ]
-      return RM 
+      return RM
          { largestUpperBound = upperBound
-         , largestLowerBound = lowerBound 
+         , largestLowerBound = lowerBound
          , spanRanges = spans
          }
       where
@@ -45,7 +45,7 @@ instance (Num a, Integral a, Ord a, Random a) => Arbitrary (RangeMerge a) where
             count <- choose (0, 10)
             helper count start
             where
-               helper :: (Num a, Ord a, Random a) => Integer -> a -> Gen [(a, a)]
+               helper :: (Num a, Ord a, Random a) => Int -> a -> Gen [(a, a)]
                helper 0 _ = return []
                helper x start = do
                   first <- fmap (+start) $ choose (2, 100)
@@ -53,50 +53,50 @@ instance (Num a, Integral a, Ord a, Random a) => Arbitrary (RangeMerge a) where
                   remainder <- helper (x - 1) second
                   return $ (first, second) : remainder
 
-prop_export_load_is_identity :: RangeMerge Integer -> Bool
+prop_export_load_is_identity :: RangeMerge Int -> Bool
 prop_export_load_is_identity x = loadRanges (exportRangeMerge x) == x
 
 test_loadRM = testGroup "loadRanges function"
    [ testProperty "loading export results in identity" prop_export_load_is_identity
    ]
 
-prop_invert_twice_is_identity :: RangeMerge Integer -> Bool
+prop_invert_twice_is_identity :: RangeMerge Int -> Bool
 prop_invert_twice_is_identity x = (invertRM . invertRM $ x) == x
 
 test_invertRM = testGroup "invertRM function"
    [ testProperty "inverting twice results in identity" prop_invert_twice_is_identity
    ]
 
-prop_union_with_empty_is_self :: RangeMerge Integer -> Bool
+prop_union_with_empty_is_self :: RangeMerge Int -> Bool
 prop_union_with_empty_is_self rm = (rm `unionRangeMerges` emptyRangeMerge) == rm
 
-prop_union_with_infinite_is_infinite :: RangeMerge Integer -> Bool
-prop_union_with_infinite_is_infinite rm = (rm `unionRangeMerges` IRM) == IRM
+prop_union_with_full_is_full :: RangeMerge Int -> Bool
+prop_union_with_full_is_full rm = (rm `unionRangeMerges` FRM) == FRM
 
 test_unionRM = testGroup "unionRangeMerges function"
    [ testProperty "Union with empty is self" prop_union_with_empty_is_self
-   , testProperty "Union with infinite is infinite" prop_union_with_infinite_is_infinite
+   , testProperty "Union with full is full" prop_union_with_full_is_full
    ]
 
-prop_intersection_with_empty_is_empty :: RangeMerge Integer -> Bool
-prop_intersection_with_empty_is_empty rm = 
+prop_intersection_with_empty_is_empty :: RangeMerge Int -> Bool
+prop_intersection_with_empty_is_empty rm =
    (rm `intersectionRangeMerges` emptyRangeMerge) == emptyRangeMerge
 
-prop_intersection_with_infinite_is_self :: RangeMerge Integer -> Bool
-prop_intersection_with_infinite_is_self rm = 
-   (rm `intersectionRangeMerges` IRM) == rm
+prop_intersection_with_full_is_self :: RangeMerge Int -> Bool
+prop_intersection_with_full_is_self rm =
+   (rm `intersectionRangeMerges` FRM) == rm
 
 test_intersectionRM = testGroup "intersectionRangeMerges function"
-   [ testProperty "Intersection with empty is empty" prop_intersection_with_empty_is_empty 
-   , testProperty "Intersection with infinite is self" prop_intersection_with_infinite_is_self 
+   [ testProperty "Intersection with empty is empty" prop_intersection_with_empty_is_empty
+   , testProperty "Intersection with full is self" prop_intersection_with_full_is_self
    ]
 
-prop_demorgans_law_one :: (RangeMerge Integer, RangeMerge Integer) -> Bool
-prop_demorgans_law_one (a, b) = 
+prop_demorgans_law_one :: (RangeMerge Int, RangeMerge Int) -> Bool
+prop_demorgans_law_one (a, b) =
    (invertRM (a `unionRangeMerges` b)) == ((invertRM a) `intersectionRangeMerges` (invertRM b))
 
-prop_demorgans_law_two :: (RangeMerge Integer, RangeMerge Integer) -> Bool
-prop_demorgans_law_two (a, b) = 
+prop_demorgans_law_two :: (RangeMerge Int, RangeMerge Int) -> Bool
+prop_demorgans_law_two (a, b) =
    (invertRM (a `intersectionRangeMerges` b)) == ((invertRM a) `unionRangeMerges` (invertRM b))
 
 test_complex_laws = testGroup "complex set theory rules"

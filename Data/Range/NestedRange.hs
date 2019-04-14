@@ -37,7 +37,7 @@ data NestedRange a = NestedRange [[Range a]]
 -- In a simple case:
 --
 -- @
--- ghci> inNestedRange [2, 8, 3] (NestedRange [[SpanRange 1 2]] :: NestedRange Integer)
+-- ghci> inNestedRange [2, 8, 3] (NestedRange [[SpanRange 1 2]] :: NestedRange Int)
 -- True
 -- (0.01 secs, 558,400 bytes)
 -- ghci>
@@ -46,7 +46,7 @@ data NestedRange a = NestedRange [[Range a]]
 -- Not in the bounds:
 --
 -- @
--- ghci> inNestedRange [2, 8, 3] (NestedRange [[SpanRange 1 2], [UpperBoundRange 7]] :: NestedRange Integer)
+-- ghci> inNestedRange [2, 8, 3] (NestedRange [[SpanRange 1 2], [UpperBoundRange 7]] :: NestedRange Int)
 -- False
 -- (0.00 secs, 558,896 bytes)
 -- ghci>

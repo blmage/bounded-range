@@ -1,13 +1,17 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE Safe #-}
 
 -- This module contains every function that purely performs operations on spans.
 module Data.Range.Spans where
 
+import Control.Applicative ((<|>))
 import Data.List (sortBy, insertBy)
+import Data.Maybe (fromMaybe)
 import Data.Ord (comparing)
+import Safe (predMay, succMay)
 
 import Data.Range.Util
-   
+
 -- Assume that both inputs are sorted spans
 insertionSortSpans :: (Ord a) => [(a, a)] -> [(a, a)] -> [(a, a)]
 insertionSortSpans = insertionSort (comparing fst)
@@ -18,7 +22,7 @@ spanCmp x@(xlow, xhigh) y@(ylow, _) = if isBetween xlow y || isBetween ylow x
    else if xhigh < ylow then LT else GT
 
 intersectSpans :: (Ord a) => [(a, a)] -> [(a, a)] -> [(a, a)]
-intersectSpans (x@(xlow, xup) : xs) (y@(ylow, yup) : ys) = 
+intersectSpans (x@(xlow, xup) : xs) (y@(ylow, yup) : ys) =
    case spanCmp x y of
       EQ -> (max xlow ylow, min xup yup) : if xup < yup
          then intersectSpans xs (y : ys)
@@ -34,16 +38,16 @@ sortSpans :: (Ord a) => [(a, a)] -> [(a, a)]
 sortSpans = sortBy (comparing fst)
 
 -- Assume that you are given a sorted list of spans
-joinSpans :: (Ord a, Enum a) => [(a, a)] -> [(a, a)]
-joinSpans (f@(a, b) : s@(x, y) : xs) = 
-   if succ b == x
+joinSpans :: (Ord a, Enum a, Bounded a) => [(a, a)] -> [(a, a)]
+joinSpans (f@(a, b) : s@(x, y) : xs) =
+   if succMay b == Just x
       then joinSpans $ (a, y) : xs
       else f : joinSpans (s : xs)
 joinSpans xs = xs
 
 -- Assume that you are given a sorted list of spans
 unionSpans :: Ord a => [(a, a)] -> [(a, a)]
-unionSpans (f@(a, b) : s@(x, y) : xs) = if isBetween x f 
+unionSpans (f@(a, b) : s@(x, y) : xs) = if isBetween x f
    then unionSpans ((a, max b y) : xs)
    else f : unionSpans (s : xs)
 unionSpans xs = xs
@@ -53,7 +57,9 @@ invertSpans :: (Ord a, Enum a) => [(a, a)] -> [(a, a)]
 invertSpans ((_, x) : s@(y, _) : xs) = (succ x, pred y) : invertSpans (s : xs)
 invertSpans _ = []
 
-hasOverlaps :: (Ord a, Enum a) => [(a, a)] -> Bool
+hasOverlaps :: (Ord a, Enum a, Bounded a) => [(a, a)] -> Bool
 hasOverlaps xs = any isOverlapping (pairs xs)
    where
-      isOverlapping ((x, y), (a, b)) = isBetween x (pred a, succ b) || isBetween a (pred x, succ y)
+      isOverlapping ((x, y), (a, b)) =
+        isBetween (Just x) (predMay a, succMay b <|> Just maxBound) ||
+        isBetween (Just a) (predMay x, succMay y <|> Just maxBound)

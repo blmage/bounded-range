@@ -21,7 +21,7 @@
 --
 -- @
 -- ghci> import qualified Data.Range.Algebra as A
--- ghci> (A.eval . A.invert $ A.const [SingletonRange 5]) :: [Range Integer]
+-- ghci> (A.eval . A.invert $ A.const [SingletonRange 5]) :: [Range Int]
 -- [LowerBoundRange 6,UpperBoundRange 4]
 -- (0.01 secs, 597,656 bytes)
 -- ghci>
@@ -77,7 +77,7 @@ class RangeAlgebra a where
 -- | Multiple ranges represented by a list of disjoint ranges.
 -- Note that input ranges are allowed to overlap, but the output
 -- ranges are guaranteed to be disjoint.
-instance (Ord a, Enum a) => RangeAlgebra [Range a] where
+instance (Ord a, Enum a, Bounded a) => RangeAlgebra [Range a] where
   eval = iter rangeAlgebra . getFree
 
 -- | Multiple ranges represented by a predicate function, indicating membership
